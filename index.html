@@ -1,401 +1,1003 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="robots" content="noindex, nofollow" />
-<title>Adessa · Guest Check-In</title>
+<meta charset="utf-8">
+<title>Adessa · AQ Output</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&family=Plus+Jakarta+Sans:wght@200;300;400;500&display=swap" rel="stylesheet">
 <style>
-  /* ---- Brand tokens (fallbacks — swap for the repo's real tokens if reusing) ---- */
-  :root{
-    --sand:#F4F0E8;        /* background */
-    --paper:#FBFAF6;       /* rows / surfaces */
-    --ink:#3D4549;         /* Dusk — primary text */
-    --muted:#8C857A;       /* secondary text */
-    --line:#E7E0D3;        /* hairlines */
-    --clay:#B08D6A;        /* warm accent */
-    --sage:#5F7D5B;        /* checked accent */
-    --sage-tint:#E6EDDF;   /* checked row fill */
-    --sage-line:#CBD9C1;   /* checked row border */
-    --ok:#4F8A52;          /* intake complete — green */
-    --ok-tint:#E8F0E6;
-    --alert:#C0432F;       /* intake missing — red */
-    --alert-tint:#F6E6E1;
-    --shadow:0 1px 2px rgba(61,69,73,.05), 0 8px 24px rgba(61,69,73,.06);
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;}
-  body{
-    background:var(--sand);
-    color:var(--ink);
-    font-family:"Plus Jakarta Sans",system-ui,sans-serif;
-    -webkit-font-smoothing:antialiased;
-    padding:0 0 calc(env(safe-area-inset-bottom) + 28px);
-    min-height:100vh;
-  }
-  .wrap{max-width:720px;margin:0 auto;padding:0 18px;}
+  *, *::before, *::after { box-sizing: border-box; }
+  /* Edge-to-edge interior color — no framing border around the content. */
+  html, body { margin: 0; padding: 0; background: #FFFAF0; min-height: 100vh; }
+  html { scrollbar-gutter: stable; }
+  body { font-family: "Plus Jakarta Sans", sans-serif; color: #36383A; -webkit-font-smoothing: antialiased; }
 
-  /* ---- Header ---- */
-  header{
-    position:sticky;top:0;z-index:10;
-    background:rgba(244,240,232,.86);
-    backdrop-filter:saturate(140%) blur(10px);
-    border-bottom:1px solid var(--line);
-    border-top:3px solid var(--clay);
-  }
-  .head-inner{max-width:720px;margin:0 auto;padding:16px 18px 14px;}
-  .brandrow{display:flex;align-items:baseline;justify-content:space-between;gap:12px;}
-  .wordmark{display:block;height:30px;width:auto;}
-  .context{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:600;}
-  .count{
-    font-family:"Fraunces",serif;font-weight:400;font-size:15px;color:var(--ink);
-    white-space:nowrap;
-  }
-  .count b{font-weight:500;}
-  .count .of{color:var(--muted);}
-  /* progress hairline */
-  .progress{height:3px;background:var(--line);border-radius:99px;margin-top:13px;overflow:hidden;}
-  .progress > i{display:block;height:100%;width:0;background:var(--sage);border-radius:99px;transition:width .35s ease;}
+  #root { display: flex; justify-content: center; padding: 20px 16px 64px; min-height: 100vh; }
 
-  /* ---- Search ---- */
-  .search{position:relative;margin:14px 0 4px;}
-  .search input{
-    width:100%;height:48px;border:1px solid var(--line);background:var(--paper);
-    border-radius:14px;padding:0 16px 0 44px;font-size:16px;color:var(--ink);
-    font-family:inherit;outline:none;transition:border-color .15s, box-shadow .15s;
+  /* Whole site uses one fixed content width so nothing shifts as you navigate. */
+  .aq-card {
+    background: #FFFAF0;
+    width: 100%;
+    max-width: 1120px;
+    padding: 24px 56px 72px;
+    align-self: flex-start;
   }
-  .search input::placeholder{color:var(--muted);}
-  .search input:focus{border-color:var(--clay);box-shadow:0 0 0 3px rgba(176,141,106,.16);}
-  .search svg{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:var(--muted);}
 
-  /* ---- List ---- */
-  .list{margin-top:14px;display:flex;flex-direction:column;gap:8px;}
-  .empty{display:none;text-align:center;color:var(--muted);padding:40px 0;font-size:15px;}
+  .aq-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    padding-bottom: 24px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid rgba(81,83,85,0.10);
+  }
 
-  .row{
-    display:flex;align-items:center;gap:14px;
-    background:var(--paper);border:1px solid var(--line);border-radius:16px;
-    padding:12px 12px 12px 16px;box-shadow:var(--shadow);
-    transition:background .25s ease, border-color .25s ease;
-    position:relative;overflow:hidden;
+  .aq-meta {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: #8C7468;
+    text-align: center;
+    flex: 1;
   }
-  .row::before{
-    content:"";position:absolute;left:0;top:0;bottom:0;width:4px;
-    background:transparent;transition:background .25s ease;
-  }
-  .time{
-    font-variant-numeric:tabular-nums;font-weight:600;font-size:14px;
-    color:var(--muted);width:74px;flex:none;letter-spacing:.01em;
-  }
-  .name{
-    font-size:17px;font-weight:600;color:var(--ink);flex:1;min-width:0;
-    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-.01em;
-  }
-  .name.placeholder{font-weight:500;color:var(--muted);font-style:italic;letter-spacing:.02em;}
 
-  .btn{
-    flex:none;min-width:128px;height:48px;border-radius:12px;cursor:pointer;
-    border:1px solid var(--ink);background:transparent;color:var(--ink);
-    font-family:inherit;font-size:14px;font-weight:600;letter-spacing:.01em;
-    display:inline-flex;align-items:center;justify-content:center;gap:7px;
-    transition:background .18s, color .18s, border-color .18s, transform .06s;
-    -webkit-tap-highlight-color:transparent;
+  /* Stage: ring + optional side text. Centered by default; splits text-left / ring-right.
+     The flex-basis transition animates the ring smaller and over to the right. */
+  .aq-stage {
+    padding: 40px 0 64px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    /* No fixed height: the stage is exactly the ring's height (the ring is the tallest
+       element), so the ring sits at the top near the header and the shorter text column
+       centers on it. The text is capped below the ring height so a collapsing/re-wrapping
+       column during the finale can't make the stage taller and shove the ring. */
   }
-  .btn:active{transform:scale(.97);}
-  .btn .check{width:16px;height:16px;display:none;}
-
-  /* ---- Checked state ---- */
-  .row.checked{background:var(--sage-tint);border-color:var(--sage-line);}
-  .row.checked::before{background:var(--sage);}
-  .row.checked .time{color:var(--sage);}
-  .row.checked .name{color:var(--ink);}
-  .row.checked .name.placeholder{color:var(--sage);font-style:normal;}
-  .row.checked .btn{background:var(--sage);border-color:var(--sage);color:#fff;}
-  .row.checked .btn .check{display:block;}
-  .row.checked .btn .label-in{display:none;}
-  .row.checked .btn .label-out{display:inline;}
-  .btn .label-out{display:none;}
-
-  /* ---- Intake indicator (host-flippable toggle) ---- */
-  .intake{
-    flex:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;
-    min-height:40px;padding:0 12px;border-radius:10px;border:1px solid transparent;
-    font-family:inherit;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
-    white-space:nowrap;cursor:pointer;-webkit-tap-highlight-color:transparent;
-    transition:background .16s, color .16s, border-color .16s, transform .06s;
+  .aq-stage-text {
+    flex: 0 1 0%;
+    min-width: 0;
+    max-height: 420px;
+    opacity: 0;
+    overflow: hidden;
+    transition: flex-basis 850ms cubic-bezier(0.22,1,0.36,1), opacity 300ms ease;
   }
-  .intake:active{transform:scale(.96);}
-  .intake svg{width:15px;height:15px;flex:none;stroke-width:2.6;}
-  .intake.done{color:var(--ok);background:var(--ok-tint);border-color:#CADEC6;}
-  .intake.missing{color:var(--alert);background:var(--alert-tint);border-color:#EAC9C1;}
-
-  /* ---- Footer / reset ---- */
-  footer{max-width:720px;margin:26px auto 0;padding:0 18px;text-align:center;}
-  .reset{
-    background:none;border:none;color:var(--muted);font-family:inherit;
-    font-size:13px;cursor:pointer;padding:8px 12px;border-radius:8px;letter-spacing:.02em;
+  .aq-stage-ring {
+    flex: 1 1 100%;
+    min-width: 0;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    transition: flex-basis 850ms cubic-bezier(0.22,1,0.36,1);
   }
-  .reset:hover{color:var(--clay);}
+  .aq-stage.is-split .aq-stage-text {
+    flex-basis: 48%;
+    opacity: 1;
+    padding-right: 44px;
+  }
+  .aq-stage.is-split .aq-stage-ring { flex-basis: 52%; }
 
-  @media (max-width:480px){
-    .wordmark{height:26px;}
-    .row{gap:9px;padding-left:13px;}
-    .intake{padding:0 11px;gap:0;}
-    .intake .ilabel{display:none;}
-    .btn{min-width:54px;width:54px;padding:0;}
-    .btn .label-in, .btn .label-out{display:none !important;}
-    .row.checked .btn .check{display:block;}
-    .btn .plus{display:block;}
-    .row.checked .btn .plus{display:none;}
+  .aq-ring-sizer {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    width: 100%;
+    max-width: 640px;
+  }
+
+  .aq-key {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .aq-key-row {
+    display: flex;
+    justify-content: center;
+    gap: 96px;
+    flex-wrap: wrap;
+  }
+
+  .aq-domain-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    gap: 64px;
+    align-items: start;
+  }
+
+  .aq-signals-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px 32px;
+  }
+
+  @media (max-width: 700px) {
+    #root { padding: 0 0 48px; }
+    .aq-card { padding: 28px 20px 48px; }
+    .aq-key-row { gap: 40px; }
+    .aq-domain-grid { grid-template-columns: 1fr; gap: 32px; }
+    .aq-ring-wrap { padding: 40px 0 48px; }
+  }
+
+  @media (max-width: 480px) {
+    .aq-card { padding: 20px 16px 40px; }
+    .aq-signals-grid { grid-template-columns: 1fr; gap: 16px 0; }
+  }
+
+  /* ── Intro / onboarding ─────────────────────────────────────────────── */
+  .aq-intro {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: opacity 350ms cubic-bezier(0.22,1,0.36,1);
+  }
+  .aq-intro-inner {
+    max-width: 560px;
+    margin: 8px auto 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 30px;
+  }
+  /* Overlay mode — content floats over the ring inside a translucent light box */
+  .aq-intro--overlay {
+    position: absolute;
+    inset: 0;
+    justify-content: center;
+    padding: 24px;
+  }
+  .aq-intro--overlay .aq-intro-inner {
+    margin: 0;
+    gap: 22px;
+    padding: 40px 38px;
+    background: rgba(233,228,217,0.78);
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+    border: 1px solid rgba(81,83,85,0.08);
+    border-radius: 10px;
+    box-shadow: 0 10px 60px rgba(54,56,58,0.07);
+  }
+  /* Title screen (overlay): keep the one-line intro on a single line */
+  .aq-intro--overlay.aq-intro--title .aq-intro-inner { max-width: none; }
+  .aq-intro--overlay.aq-intro--title .aq-intro-body p { white-space: nowrap; max-width: none; }
+  /* Eyebrow above the headline — matches the reading-guide key (small caps, #8C7468) */
+  .aq-intro-eyebrow {
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 11px; font-weight: 500; text-transform: uppercase;
+    letter-spacing: 0.22em; color: #8C7468;
+    margin-bottom: 12px;
+  }
+  .aq-intro-title {
+    font-family: "Fraunces", serif; font-weight: 300;
+    font-size: 36px; line-height: 1.12; letter-spacing: -0.01em;
+    color: #1F2123; margin: 0;
+  }
+  .aq-intro-body { margin: 0; }
+  .aq-intro-body p {
+    font-family: "Fraunces", serif; font-weight: 300;
+    font-size: 18px; line-height: 1.6; color: #36383A;
+    margin: 0 0 18px; max-width: 52ch;
+  }
+  .aq-intro-body p:last-child { margin-bottom: 0; }
+  .aq-intro-body strong { font-weight: 600; }
+  .aq-intro-actions { margin-top: 6px; }
+  /* Split mode — content sits in a left column beside the ring, left-aligned */
+  .aq-intro--split { align-items: flex-start; width: 100%; }
+  .aq-intro--split .aq-intro-inner {
+    margin: 0;
+    max-width: none;
+    align-items: flex-start;
+    text-align: left;
+  }
+  .aq-intro--split .aq-intro-body p { max-width: none; }
+  /* Step slides (2-5): fix the block to slide 2's height and pin the button to its
+     bottom, so the CTA stays in one spot as the guest advances. */
+  .aq-intro--steps .aq-intro-inner { min-height: 374px; }
+  .aq-intro--steps .aq-intro-actions { margin-top: auto; }
+
+  .aq-btn {
+    background: #748485; color: #FFFAF0; border: 1px solid #748485;
+    padding: 14px 32px; border-radius: 999px;
+    font-family: "Plus Jakarta Sans", sans-serif; font-size: 11px; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.20em; cursor: pointer;
+    transition: all 280ms cubic-bezier(0.22,1,0.36,1);
+  }
+  .aq-btn:hover { background: #5F6F70; border-color: #5F6F70; }
+  .aq-btn:active { transform: translateY(1px); }
+
+  /* Detail content extends down on reveal (grid-rows 0fr→1fr animates the height open).
+     No background — the content sits on the card as usual. */
+  .aq-detail {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 600ms cubic-bezier(0.22,1,0.36,1);
+  }
+  .aq-detail.is-open { grid-template-rows: 1fr; }
+  .aq-detail-clip { overflow: hidden; min-height: 0; }
+  .aq-fade { animation: aqFadeIn 650ms cubic-bezier(0.22,1,0.36,1) both; }
+  @keyframes aqFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* Stack the split layout on narrower screens (phones / portrait tablets): ring on top.
+     Below ~1000px the ring column gets too small to stay taller than the text, so stack. */
+  @media (max-width: 1000px) {
+    .aq-stage { flex-direction: column; align-items: stretch; }
+    .aq-stage-ring { order: -1; flex-basis: auto; }
+    .aq-stage-text,
+    .aq-stage.is-split .aq-stage-text {
+      flex-basis: auto; opacity: 1; overflow: visible; padding-right: 0; max-height: none;
+    }
+    .aq-stage.is-split .aq-stage-ring { flex-basis: auto; }
+    .aq-intro--split { align-items: center; }
+    .aq-intro--split .aq-intro-inner { align-items: center; text-align: center; margin: 8px auto 0; max-width: 560px; }
+    .aq-intro--split .aq-intro-body p { max-width: 52ch; }
+  }
+
+  @media (max-width: 700px) {
+    .aq-intro-inner { gap: 24px; }
+    .aq-intro--overlay { padding: 14px; }
+    .aq-intro--overlay .aq-intro-inner { padding: 28px 22px; gap: 20px; }
+    .aq-intro-title { font-size: 28px; }
+    .aq-intro-body p { font-size: 17px; }
+    /* Too narrow for the intro line to fit on one line — allow it to wrap */
+    .aq-intro--overlay.aq-intro--title .aq-intro-inner { max-width: 560px; }
+    .aq-intro--overlay.aq-intro--title .aq-intro-body p { white-space: normal; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .aq-detail { transition: none; }
   }
 </style>
 </head>
 <body>
-  <header>
-    <div class="head-inner">
-      <div class="brandrow">
-        <div>
-          <svg class="wordmark" role="img" aria-label="Adessa" viewBox="0 0 975 261" xmlns="http://www.w3.org/2000/svg" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
-            <g transform="matrix(1,0,0,1,-8.521543,-2.988026)">
-              <g transform="matrix(0.885963,0,0,0.885963,-22.057345,-326.186091)">
-                <path d="M235.802,662L259.505,662L153.406,371.544L151.149,371.544L135.723,399.009L34.515,662L54.456,662L87.941,567.188L201.565,567.188L235.802,662ZM143.624,410.296L145.129,410.296L197.05,554.396L92.456,554.396L143.624,410.296Z" style="fill:rgb(81,83,85);fill-rule:nonzero;"/>
-                <path d="M406.238,655.98C417.526,649.96 423.545,644.693 428.813,639.802L428.813,664.634L448.753,662.376L448.753,373.801L428.437,377.187L428.437,488.93C423.169,486.673 403.229,483.287 392.694,483.287C340.773,483.287 292.991,518.277 292.991,579.98C292.991,628.139 326.1,665.762 367.486,665.762C380.654,665.762 396.833,661.248 406.238,655.98ZM314.813,569.822C314.813,524.673 343.783,494.198 381.407,490.811C395.704,491.188 416.021,500.217 428.437,504.732L428.437,634.911C414.892,642.436 397.585,648.832 378.021,648.832C336.258,648.832 314.813,613.465 314.813,569.822Z" style="fill:rgb(81,83,85);fill-rule:nonzero;"/>
-                <path d="M644.397,641.683C645.15,636.792 645.902,633.406 646.279,629.643C637.625,638.297 617.308,649.584 587.585,649.584C549.585,649.584 524.754,622.119 524.754,578.099C524.754,568.693 525.506,560.039 527.011,552.138L647.031,552.138C647.407,549.505 647.784,546.871 647.784,544.237C648.16,498.336 620.318,483.287 584.199,483.287C573.288,483.287 556.734,488.93 544.318,497.584C521.367,513.01 503.308,543.861 503.308,582.614C503.308,633.03 537.922,665.762 580.437,665.762C611.665,665.762 632.734,655.98 644.397,641.683ZM578.179,490.435C613.922,491.188 627.09,508.495 627.09,540.475L528.516,545.366C537.922,509.247 561.625,491.188 578.179,490.435Z" style="fill:rgb(81,83,85);fill-rule:nonzero;"/>
-                <path d="M796.398,493.445C782.853,488.554 768.932,483.287 754.635,483.287C740.338,483.287 727.17,488.554 716.259,495.703C704.596,503.604 696.318,516.772 696.318,529.94C696.318,561.921 715.506,567.188 745.606,580.356C778.715,595.03 788.121,598.416 788.121,624.376C788.121,645.069 768.556,655.228 756.14,657.109C738.457,657.109 714.754,646.574 697.071,639.426L691.427,655.228C710.992,662.376 727.922,665.762 738.833,665.762C762.16,665.762 773.071,657.861 784.358,649.208C795.269,640.554 803.17,626.634 803.17,611.584C803.17,582.99 782.853,575.089 753.883,561.921C721.903,547.624 710.992,543.485 710.992,522.039C710.992,503.227 727.17,493.445 739.21,491.94C756.14,491.94 775.328,501.346 790.378,508.495L796.398,493.445Z" style="fill:rgb(81,83,85);fill-rule:nonzero;"/>
-                <path d="M944.259,493.445C930.715,488.554 916.794,483.287 902.497,483.287C888.2,483.287 875.032,488.554 864.121,495.703C852.457,503.604 844.18,516.772 844.18,529.94C844.18,561.921 863.368,567.188 893.467,580.356C926.576,595.03 935.982,598.416 935.982,624.376C935.982,645.069 916.418,655.228 904.002,657.109C886.319,657.109 862.616,646.574 844.933,639.426L839.289,655.228C858.853,662.376 875.784,665.762 886.695,665.762C910.022,665.762 920.933,657.861 932.22,649.208C943.131,640.554 951.032,626.634 951.032,611.584C951.032,582.99 930.715,575.089 901.745,561.921C869.764,547.624 858.853,543.485 858.853,522.039C858.853,503.227 875.032,493.445 887.071,491.94C904.002,491.94 923.19,501.346 938.24,508.495L944.259,493.445Z" style="fill:rgb(81,83,85);fill-rule:nonzero;"/>
-                <path d="M1014.992,491.188C1012.359,494.95 1006.715,503.604 999.567,513.386L1000.319,514.138C1013.864,506.237 1031.923,499.089 1048.854,499.089C1077.072,499.089 1090.24,510.752 1090.24,531.445L1090.24,566.435L997.685,601.049C995.428,608.95 993.547,616.475 993.547,622.871C993.547,648.455 1009.725,665.762 1035.309,665.762C1050.359,665.762 1064.28,660.871 1074.438,652.218C1080.834,646.95 1086.854,640.931 1090.24,635.287L1090.616,635.287L1090.616,637.168C1090.616,657.485 1105.29,665.762 1118.458,665.762C1121.844,665.762 1127.111,665.01 1128.24,664.257L1135.012,648.832C1133.131,649.584 1128.993,649.96 1127.111,649.96C1116.577,649.96 1110.557,644.317 1110.557,631.148L1110.557,525.425C1110.557,499.841 1089.488,483.287 1055.25,483.287C1038.695,483.287 1024.022,487.425 1014.992,491.188ZM1013.864,618.733C1013.864,614.218 1014.992,607.069 1016.874,602.931L1090.24,570.574L1090.24,629.643C1079.705,645.069 1062.775,654.099 1043.586,654.099C1022.893,654.099 1013.864,639.049 1013.864,618.733Z" style="fill:rgb(81,83,85);fill-rule:nonzero;"/>
-              </g>
-            </g>
-          </svg>
-          <div class="context" style="margin-top:4px;">Guest Check-In · Miami</div>
-        </div>
-        <div class="count"><b id="checkedCount">0</b> <span class="of">/ <span id="totalCount">0</span> checked in</span></div>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin></script>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+/* ─── GUEST INPUT ────────────────────────────────────────────────────────── */
+/* Name and date are provided by the calling application (TBD). To inject them,
+   set window.AQ_GUEST = { name: "…", date: "…" } before this script runs.
+   Until then, the name defaults to a placeholder and the date shows today. */
+const GUEST_INPUT = (typeof window !== "undefined" && window.AQ_GUEST) || {};
+const guestName = GUEST_INPUT.name || "Jane D.";
+const guestDate = GUEST_INPUT.date ||
+  new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+
+/* ─── DATA ─────────────────────────────────────────────────────────────── */
+const AQ_DATA = {
+  guest: { name: guestName, session: guestDate, potential: 84 },
+  cognitive: [
+    {
+      key: "A", name: "Attention", aqLetter: "A", score: 86,
+      blurb: "Sustained focus and the orienting response — how steadily your mind holds a target and resists drift.",
+      sources: ["Ocular scan", "EEG"],
+      metrics: [
+        { label: "Saccade latency", value: "212 ms", note: "within optimal range" },
+        { label: "Fixation stability", value: "94%", note: "high" },
+        { label: "Frontal theta (Fz)", value: "5.8 µV²", note: "engaged" },
+        { label: "Alpha desync. (parietal)", value: "−18%", note: "active suppression" },
+      ],
+    },
+    {
+      key: "W", name: "Working memory", aqLetter: "M", score: 37,
+      blurb: "The mental workspace where information is held and manipulated for short bursts.",
+      sources: ["Reasoning assessment", "EEG"],
+      metrics: [
+        { label: "n-back accuracy (2-back)", value: "71%", note: "below personal baseline" },
+        { label: "Frontal-parietal coupling", value: "0.42", note: "moderate" },
+        { label: "Theta/gamma cross-freq.", value: "0.08", note: "low" },
+        { label: "Reaction-time variability", value: "108 ms", note: "elevated" },
+      ],
+    },
+    {
+      key: "P", name: "Processing speed", aqLetter: "P", score: 64,
+      blurb: "How quickly your brain takes information in, organizes it, and acts on it.",
+      sources: ["Ocular scan", "EEG"],
+      metrics: [
+        { label: "Mean reaction time", value: "486 ms", note: "typical" },
+        { label: "P300 latency", value: "318 ms", note: "fast" },
+        { label: "Pursuit gain", value: "0.91", note: "smooth" },
+        { label: "Inspection time", value: "94 ms", note: "efficient" },
+      ],
+    },
+    {
+      key: "E", name: "Executive function", aqLetter: "E", score: 73,
+      blurb: "Planning, sequencing, inhibition — the orchestration of intent across time.",
+      sources: ["Reasoning assessment", "EEG"],
+      metrics: [
+        { label: "Stroop interference", value: "78 ms", note: "low cost" },
+        { label: "Set-shift accuracy", value: "89%", note: "strong" },
+        { label: "Frontal beta (F3/F4)", value: "3.4 µV²", note: "engaged" },
+        { label: "Error-related negativity", value: "−6.1 µV", note: "active monitoring" },
+      ],
+    },
+  ],
+  affective: [
+    {
+      key: "M", name: "Mood", score: 50,
+      blurb: "The general tone of your emotional baseline, from heavy to light.",
+      sources: ["EEG", "HRV"],
+      metrics: [
+        { label: "Frontal alpha asym. (FAA)", value: "+0.08", note: "neutral-positive" },
+        { label: "HRV (RMSSD)", value: "48 ms", note: "balanced" },
+        { label: "Self-report (PANAS-pos)", value: "28", note: "moderate" },
+        { label: "Self-report (PANAS-neg)", value: "14", note: "low" },
+      ],
+    },
+    {
+      key: "S", name: "Composure", score: 58,
+      blurb: "Your nervous system's resting reactivity — how settled or alert you sit at rest.",
+      sources: ["HRV", "EEG"],
+      metrics: [
+        { label: "LF/HF ratio", value: "1.6", note: "balanced sympathetic" },
+        { label: "Resting heart rate", value: "64 bpm", note: "calm" },
+        { label: "Frontal beta/alpha", value: "0.71", note: "moderate vigilance" },
+        { label: "Skin-conductance var.", value: "0.18 µS", note: "low" },
+      ],
+    },
+    {
+      key: "R", name: "Resilience", score: 36,
+      blurb: "Your capacity to recover steadiness after a perturbation — emotional bounce-back.",
+      sources: ["HRV", "Reasoning assessment"],
+      metrics: [
+        { label: "HRV coherence", value: "0.42", note: "low coherence" },
+        { label: "Recovery slope (post-stim)", value: "−0.6 / min", note: "slow" },
+        { label: "Vagal tone (HF power)", value: "412 ms²", note: "below median" },
+        { label: "CD-RISC short", value: "22 / 40", note: "developing" },
+      ],
+    },
+    {
+      key: "Mn", name: "Mindfulness", score: 50,
+      blurb: "The ease of returning attention to the present moment without judgment.",
+      sources: ["EEG", "HRV"],
+      metrics: [
+        { label: "Posterior alpha (Pz)", value: "9.2 µV²", note: "open awareness" },
+        { label: "Default-mode coherence", value: "0.55", note: "moderate" },
+        { label: "Breath-pace coupling", value: "0.61", note: "moderate" },
+        { label: "MAAS short", value: "4.1 / 6", note: "present" },
+      ],
+    },
+  ],
+};
+
+/* ─── DERIVED AQ SCORE ───────────────────────────────────────────────────── */
+/* Computed from the 4 cognitive percentages so it stays correct when the real
+   numbers are passed in from the upstream output.
+   Letter = aqLetter of the highest-scoring cognitive domain
+            (A = Attention, E = Executive function, M = Working memory, P = Processing speed)
+   Digits = rounded average of the 4 cognitive percentages ("utilization"). */
+(function computeAQ(data) {
+  const cog = data.cognitive;
+  /* Highest score wins; ties broken by alphabetical aqLetter (A, E, M, P). */
+  const leadDomain = cog.reduce((best, d) => {
+    if (d.score > best.score) return d;
+    if (d.score === best.score && d.aqLetter < best.aqLetter) return d;
+    return best;
+  }, cog[0]);
+  const utilization = Math.round(cog.reduce((sum, d) => sum + d.score, 0) / cog.length);
+  cog.forEach(d => { d.isLead = d === leadDomain; });
+  /* Lowest-scoring cognitive domain — the area of greatest growth potential.
+     Ties broken by alphabetical aqLetter (A, E, M, P), matching the lead rule. */
+  const growthDomain = cog.reduce((low, d) => {
+    if (d.score < low.score) return d;
+    if (d.score === low.score && d.aqLetter < low.aqLetter) return d;
+    return low;
+  }, cog[0]);
+  data.aq = {
+    code: `${leadDomain.aqLetter}.${utilization}`,
+    lead: leadDomain.aqLetter,
+    utilization,
+    leadLabel: `${leadDomain.name}-led`,
+    growthDomain: growthDomain.name,
+  };
+})(AQ_DATA);
+
+/* ─── LOGO ──────────────────────────────────────────────────────────────── */
+function AdessaLogo({ height = 22 }) {
+  return (
+    <svg viewBox="0 0 975 261" height={height} xmlns="http://www.w3.org/2000/svg" style={{ width: "auto", display: "block", flexShrink: 0 }} fillRule="evenodd" clipRule="evenodd">
+      <g transform="matrix(1,0,0,1,-8.521543,-2.988026)">
+        <g transform="matrix(0.885963,0,0,0.885963,-22.057345,-326.186091)">
+          <path fill="#515355" fillRule="nonzero" d="M235.802,662L259.505,662L153.406,371.544L151.149,371.544L135.723,399.009L34.515,662L54.456,662L87.941,567.188L201.565,567.188L235.802,662ZM143.624,410.296L145.129,410.296L197.05,554.396L92.456,554.396L143.624,410.296Z"/>
+          <path fill="#515355" fillRule="nonzero" d="M406.238,655.98C417.526,649.96 423.545,644.693 428.813,639.802L428.813,664.634L448.753,662.376L448.753,373.801L428.437,377.187L428.437,488.93C423.169,486.673 403.229,483.287 392.694,483.287C340.773,483.287 292.991,518.277 292.991,579.98C292.991,628.139 326.1,665.762 367.486,665.762C380.654,665.762 396.833,661.248 406.238,655.98ZM314.813,569.822C314.813,524.673 343.783,494.198 381.407,490.811C395.704,491.188 416.021,500.217 428.437,504.732L428.437,634.911C414.892,642.436 397.585,648.832 378.021,648.832C336.258,648.832 314.813,613.465 314.813,569.822Z"/>
+          <path fill="#515355" fillRule="nonzero" d="M644.397,641.683C645.15,636.792 645.902,633.406 646.279,629.643C637.625,638.297 617.308,649.584 587.585,649.584C549.585,649.584 524.754,622.119 524.754,578.099C524.754,568.693 525.506,560.039 527.011,552.138L647.031,552.138C647.407,549.505 647.784,546.871 647.784,544.237C648.16,498.336 620.318,483.287 584.199,483.287C573.288,483.287 556.734,488.93 544.318,497.584C521.367,513.01 503.308,543.861 503.308,582.614C503.308,633.03 537.922,665.762 580.437,665.762C611.665,665.762 632.734,655.98 644.397,641.683ZM578.179,490.435C613.922,491.188 627.09,508.495 627.09,540.475L528.516,545.366C537.922,509.247 561.625,491.188 578.179,490.435Z"/>
+          <path fill="#515355" fillRule="nonzero" d="M796.398,493.445C782.853,488.554 768.932,483.287 754.635,483.287C740.338,483.287 727.17,488.554 716.259,495.703C704.596,503.604 696.318,516.772 696.318,529.94C696.318,561.921 715.506,567.188 745.606,580.356C778.715,595.03 788.121,598.416 788.121,624.376C788.121,645.069 768.556,655.228 756.14,657.109C738.457,657.109 714.754,646.574 697.071,639.426L691.427,655.228C710.992,662.376 727.922,665.762 738.833,665.762C762.16,665.762 773.071,657.861 784.358,649.208C795.269,640.554 803.17,626.634 803.17,611.584C803.17,582.99 782.853,575.089 753.883,561.921C721.903,547.624 710.992,543.485 710.992,522.039C710.992,503.227 727.17,493.445 739.21,491.94C756.14,491.94 775.328,501.346 790.378,508.495L796.398,493.445Z"/>
+          <path fill="#515355" fillRule="nonzero" d="M944.259,493.445C930.715,488.554 916.794,483.287 902.497,483.287C888.2,483.287 875.032,488.554 864.121,495.703C852.457,503.604 844.18,516.772 844.18,529.94C844.18,561.921 863.368,567.188 893.467,580.356C926.576,595.03 935.982,598.416 935.982,624.376C935.982,645.069 916.418,655.228 904.002,657.109C886.319,657.109 862.616,646.574 844.933,639.426L839.289,655.228C858.853,662.376 875.784,665.762 886.695,665.762C910.022,665.762 920.933,657.861 932.22,649.208C943.131,640.554 951.032,626.634 951.032,611.584C951.032,582.99 930.715,575.089 901.745,561.921C869.764,547.624 858.853,543.485 858.853,522.039C858.853,503.227 875.032,493.445 887.071,491.94C904.002,491.94 923.19,501.346 938.24,508.495L944.259,493.445Z"/>
+          <path fill="#515355" fillRule="nonzero" d="M1014.992,491.188C1012.359,494.95 1006.715,503.604 999.567,513.386L1000.319,514.138C1013.864,506.237 1031.923,499.089 1048.854,499.089C1077.072,499.089 1090.24,510.752 1090.24,531.445L1090.24,566.435L997.685,601.049C995.428,608.95 993.547,616.475 993.547,622.871C993.547,648.455 1009.725,665.762 1035.309,665.762C1050.359,665.762 1064.28,660.871 1074.438,652.218C1080.834,646.95 1086.854,640.931 1090.24,635.287L1090.616,635.287L1090.616,637.168C1090.616,657.485 1105.29,665.762 1118.458,665.762C1121.844,665.762 1127.111,665.01 1128.24,664.257L1135.012,648.832C1133.131,649.584 1128.993,649.96 1127.111,649.96C1116.577,649.96 1110.557,644.317 1110.557,631.148L1110.557,525.425C1110.557,499.841 1089.488,483.287 1055.25,483.287C1038.695,483.287 1024.022,487.425 1014.992,491.188ZM1013.864,618.733C1013.864,614.218 1014.992,607.069 1016.874,602.931L1090.24,570.574L1090.24,629.643C1079.705,645.069 1062.775,654.099 1043.586,654.099C1022.893,654.099 1013.864,639.049 1013.864,618.733Z"/>
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+/* ─── GEOMETRY ───────────────────────────────────────────────────────────── */
+function polar(cx, cy, r, deg) {
+  const rad = (deg - 90) * Math.PI / 180;
+  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+}
+
+function arcPath(cx, cy, r, startDeg, endDeg) {
+  const s = polar(cx, cy, r, startDeg);
+  const e = polar(cx, cy, r, endDeg);
+  const sweep = endDeg - startDeg;
+  const large = Math.abs(sweep) <= 180 ? 0 : 1;
+  const dir = sweep >= 0 ? 1 : 0;
+  return `M ${s.x} ${s.y} A ${r} ${r} 0 ${large} ${dir} ${e.x} ${e.y}`;
+}
+
+function quadrant(qIdx, baseRotation, gutter = 6) {
+  const center = baseRotation + qIdx * 90;
+  const leading = center - 45 + gutter;
+  const trailing = center + 45 - gutter;
+  return { center, leading, trailing };
+}
+
+/* ─── RING ───────────────────────────────────────────────────────────────── */
+function AQRing({ onSelect = () => {}, active = null, size = 560, data, reveal, reducedMotion = false }) {
+  const cx = size / 2;
+  const cy = size / 2;
+
+  const outerR = size * 0.42;
+  const outerStroke = size * 0.058;
+  const innerR = size * 0.28;
+  const innerStroke = size * 0.034;
+
+  const DUSK = "#515355";
+  const SEA  = "#8E9BA4";
+
+  /* Color of a cognitive domain when it is the leading domain, keyed by aqLetter.
+     Non-leading cognitive domains stay DUSK. */
+  const LEAD_COLORS = {
+    A: "#D89048", // Attention
+    E: "#5F6DA3", // Executive function
+    M: "#3A8278", // Working memory
+    P: "#C8645A", // Processing speed
+  };
+
+  /* Uniform "present but unscored" fill length used during the intro, before
+     the guest's real values fill in. Same fraction for every arc. */
+  const PLACEHOLDER = 0.55;
+
+  /* Reveal state — each arc's fill length and opacity are driven by this so the
+     intro, finale, and final visual are the same chart at different stages.
+     Fill modes: "placeholder" (uniform unscored), "empty" (drawn to 0),
+     "scored" (real values — geometry/color reduce exactly to the final visual). */
+  const r = reveal || {};
+  const outerFill     = r.outerFill || "scored";   // "placeholder" | "empty" | "scored"
+  const innerFill     = r.innerFill || "scored";
+  const outerOpacity  = r.outerOpacity != null ? r.outerOpacity : 1;
+  const innerOpacity  = r.innerOpacity != null ? r.innerOpacity : 1;
+  const outerLabels   = r.outerLabels || "full";   // "hidden" | "names" | "full"
+  const innerLabels   = r.innerLabels || "full";
+  const centerStage   = r.centerStage || "final";
+  const centerNumber  = r.centerNumber != null ? r.centerNumber : data.aq.utilization;
+
+  const fillFraction = (mode, score) =>
+    mode === "scored" ? Math.max(0, Math.min(100, score)) / 100
+    : mode === "empty" ? 0
+    : PLACEHOLDER;
+
+  const cogLeadKey = (data.cognitive.find(d => d.isLead) || data.cognitive[0]).key;
+
+  const outerArcs = data.cognitive.map((d, i) => {
+    const q = quadrant(i, 0, 6);
+    const totalSpan = q.trailing - q.leading;
+    const trackLen = outerR * totalSpan * Math.PI / 180;
+    const fraction = fillFraction(outerFill, d.score);
+    const isLead = d.key === cogLeadKey;
+    return { ...d, ...q, totalSpan, trackLen, fraction, isLead,
+      color: outerFill === "scored" ? (isLead ? (LEAD_COLORS[d.aqLetter] || DUSK) : DUSK) : DUSK };
+  });
+
+  const innerArcs = data.affective.map((d, i) => {
+    const q = quadrant(i, 45, 8);
+    const totalSpan = q.trailing - q.leading;
+    const trackLen = innerR * totalSpan * Math.PI / 180;
+    const fraction = fillFraction(innerFill, d.score);
+    return { ...d, ...q, totalSpan, trackLen, fraction, color: SEA };
+  });
+
+  /* Fill transition. Length (stroke-dasharray) + color wipe in on the finale (all
+     segments of a ring together); reduced motion skips that and cross-fades opacity. */
+  const arcTransition = (delay) =>
+    reducedMotion
+      ? "opacity 450ms ease"
+      : `stroke-dasharray 920ms cubic-bezier(0.22,1,0.36,1) ${delay}ms, stroke 700ms ease ${delay}ms, opacity 700ms ease ${delay}ms`;
+
+  /* Wedge hit-target */
+  const Wedge = ({ q, rOuter, rInner, domKey, isActive }) => {
+    const sOuter = polar(cx, cy, rOuter, q.leading);
+    const eOuter = polar(cx, cy, rOuter, q.trailing);
+    const sInner = polar(cx, cy, rInner, q.trailing);
+    const eInner = polar(cx, cy, rInner, q.leading);
+    const sweep = q.trailing - q.leading;
+    const large = sweep <= 180 ? 0 : 1;
+    const d = `M ${sOuter.x} ${sOuter.y} A ${rOuter} ${rOuter} 0 ${large} 1 ${eOuter.x} ${eOuter.y} L ${sInner.x} ${sInner.y} A ${rInner} ${rInner} 0 ${large} 0 ${eInner.x} ${eInner.y} Z`;
+    return (
+      <path d={d} fill="transparent"
+        style={{ cursor: "pointer" }}
+        onClick={() => onSelect(domKey)} />
+    );
+  };
+
+  return (
+    <svg viewBox={`0 0 ${size} ${size}`} width="100%" height="100%" style={{ overflow: "visible", display: "block" }}>
+      <defs>
+        {/* Outer label paths */}
+        {outerArcs.map((q, i) => {
+          const c = ((q.center % 360) + 360) % 360;
+          const isLower = c > 90 && c < 270;
+          const BASE = outerR + outerStroke / 2 + 22;
+          const CAP_OFFSET = 10;
+          if (isLower) {
+            return <path key={`olp-${i}`} id={`olp-${i}`} d={arcPath(cx, cy, BASE + CAP_OFFSET, q.trailing, q.leading)} fill="none" />;
+          }
+          return <path key={`olp-${i}`} id={`olp-${i}`} d={arcPath(cx, cy, BASE, q.leading, q.trailing)} fill="none" />;
+        })}
+
+        {/* Inner label paths */}
+        {innerArcs.map((q, i) => {
+          const c = ((q.center % 360) + 360) % 360;
+          const isLower = c > 90 && c < 270;
+          const BASE = innerR - innerStroke / 2 - 12;
+          const CAP_OFFSET = 9;
+          const lrLow = isLower ? BASE : BASE - CAP_OFFSET;
+          return (
+            <path key={`ilp-${i}`} id={`ilp-${i}`}
+              d={isLower ? arcPath(cx, cy, lrLow, q.trailing, q.leading) : arcPath(cx, cy, lrLow, q.leading, q.trailing)}
+              fill="none" />
+          );
+        })}
+      </defs>
+
+      {/* OUTER tracks */}
+      {outerArcs.map((q, i) => (
+        <path key={`ot-${i}`} d={arcPath(cx, cy, outerR, q.leading, q.trailing)}
+          fill="none" stroke="rgba(81,83,85,0.06)" strokeWidth={outerStroke} strokeLinecap="round" />
+      ))}
+
+      {/* OUTER fills — clockwise; visible length driven by fraction via stroke-dasharray */}
+      {outerArcs.map((q, i) => {
+        const pathD = arcPath(cx, cy, outerR, q.leading, q.trailing);
+        const visible = q.fraction * q.trackLen;
+        const delay = 0;   // all 4 segments wipe in together (no per-segment stagger)
+        return (
+          <path key={`of-${i}`} d={pathD} fill="none" stroke={q.color} strokeWidth={outerStroke} strokeLinecap="round"
+            opacity={outerOpacity}
+            strokeDasharray={`${visible} ${q.trackLen + 20}`}
+            strokeDashoffset={0}
+            style={{ transition: arcTransition(delay) }}
+          />
+        );
+      })}
+
+      {/* INNER tracks */}
+      {innerArcs.map((q, i) => (
+        <path key={`it-${i}`} d={arcPath(cx, cy, innerR, q.leading, q.trailing)}
+          fill="none" stroke="rgba(81,83,85,0.06)" strokeWidth={innerStroke} strokeLinecap="round" />
+      ))}
+
+      {/* INNER fills — counterclockwise (reverse path); length driven by fraction */}
+      {innerArcs.map((q, i) => {
+        const pathD = arcPath(cx, cy, innerR, q.trailing, q.leading);
+        const visible = q.fraction * q.trackLen;
+        const delay = 0;   // all 4 segments wipe in together (no per-segment stagger)
+        return (
+          <path key={`if-${i}`} d={pathD} fill="none" stroke={q.color} strokeWidth={innerStroke} strokeLinecap="round"
+            opacity={innerOpacity}
+            strokeDasharray={`${visible} ${q.trackLen + 20}`}
+            strokeDashoffset={0}
+            style={{ transition: arcTransition(delay) }}
+          />
+        );
+      })}
+
+      {/* Wedge hit-targets */}
+      {outerArcs.map((q, i) => (
+        <Wedge key={`ow-${i}`} q={q} rOuter={outerR + outerStroke} rInner={outerR - outerStroke}
+          domKey={q.key} isActive={active === q.key} />
+      ))}
+      {innerArcs.map((q, i) => (
+        <Wedge key={`iw-${i}`} q={q} rOuter={innerR + innerStroke} rInner={innerR - innerStroke}
+          domKey={q.key} isActive={active === q.key} />
+      ))}
+
+      {/* OUTER labels — names appear with the ring; percentages added at the finale */}
+      {outerArcs.map((q, i) => (
+        <g key={`ol-${i}`} style={{ opacity: outerLabels === "hidden" ? 0 : 1, transition: "opacity 600ms ease" }}>
+          <text style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 400, fontSize: 13, letterSpacing: "0.22em", textTransform: "uppercase", fill: q.isLead ? "#1F2123" : "#515355" }}>
+            <textPath href={`#olp-${i}`} startOffset="50%" textAnchor="middle">
+              {outerLabels === "full" ? <>{q.name.toUpperCase()}{"  ·  "}{q.score}%</> : q.name.toUpperCase()}
+            </textPath>
+          </text>
+        </g>
+      ))}
+
+      {/* INNER labels */}
+      {innerArcs.map((q, i) => (
+        <g key={`il-${i}`} style={{ opacity: innerLabels === "hidden" ? 0 : 1, transition: "opacity 600ms ease" }}>
+          <text style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 400, fontSize: 11, letterSpacing: "0.20em", textTransform: "uppercase", fill: "#515355" }}>
+            <textPath href={`#ilp-${i}`} startOffset="50%" textAnchor="middle">
+              {innerLabels === "full" ? <>{q.name.toUpperCase()}{"  ·  "}{q.score}%</> : q.name.toUpperCase()}
+            </textPath>
+          </text>
+        </g>
+      ))}
+
+      {/* CENTER — AQ code. Placeholder is centered in the ring; at the finale it glides
+         up to make room for the descriptor while the digits count up. */}
+      <text x={cx} y={cy - size * 0.045} textAnchor="middle" dominantBaseline="central"
+        style={{
+          fontFamily: '"Plus Jakarta Sans", sans-serif',
+          fontWeight: 200,
+          fontSize: size * 0.13,
+          letterSpacing: "-0.02em",
+          fill: "#1F2123",
+          fontFeatureSettings: '"tnum" 1, "lnum" 1',
+          opacity: centerStage === "hidden" ? 0 : 1,
+          transform: centerStage === "final" ? "translateY(0px)" : `translateY(${size * 0.045}px)`,
+          transition: "opacity 500ms cubic-bezier(0.22,1,0.36,1), transform 600ms cubic-bezier(0.22,1,0.36,1)",
+        }}>
+        {`${data.aq.lead}.${String(centerNumber).padStart(2, "0")}`}
+      </text>
+
+      {/* CENTER — growth descriptor (lowest cognitive domain) */}
+      <text x={cx} y={cy + size * 0.060} textAnchor="middle"
+        style={{
+          opacity: centerStage === "final" ? 1 : 0,
+          transition: "opacity 500ms cubic-bezier(0.22,1,0.36,1)",
+        }}>
+        <tspan x={cx} style={{
+          fontFamily: '"Plus Jakarta Sans", sans-serif',
+          fontWeight: 500,
+          fontSize: size * 0.019,
+          letterSpacing: "0.18em",
+          textTransform: "uppercase",
+          fill: "#8B8C8E",
+        }}>Greatest potential in</tspan>
+        <tspan x={cx} dy={size * 0.032} style={{
+          fontFamily: '"Plus Jakarta Sans", sans-serif',
+          fontWeight: 500,
+          fontSize: size * 0.019,
+          letterSpacing: "0.18em",
+          textTransform: "uppercase",
+          fill: "#8B8C8E",
+        }}>{data.aq.growthDomain}</tspan>
+      </text>
+    </svg>
+  );
+}
+
+/* ─── KEY ITEM ───────────────────────────────────────────────────────────── */
+function KeyItem({ dotColor, eyebrow, sub, centered }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: centered ? "center" : "flex-start" }}>
+      <div style={{ fontSize: 11, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.22em", color: "#8C7468", display: "inline-flex", alignItems: "center", gap: 8, whiteSpace: "nowrap" }}>
+        {dotColor && <span style={{ color: dotColor, fontSize: 13, lineHeight: 1 }}>●</span>}
+        <span>{eyebrow}</span>
       </div>
-      <div class="progress"><i id="progressBar"></i></div>
-      <div class="search">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
-        <input id="search" type="search" inputmode="search" autocomplete="off" placeholder="Search guest name…" aria-label="Search guests by name">
+      <div style={{ fontFamily: '"Fraunces", serif', fontStyle: "italic", fontWeight: 300, fontSize: 13, lineHeight: 1.35, color: "#8C7468", textTransform: "none", letterSpacing: 0, whiteSpace: centered ? "nowrap" : "normal", textAlign: centered ? "center" : "left" }}>
+        {sub}
       </div>
     </div>
-  </header>
+  );
+}
 
-  <main class="wrap">
-    <div class="list" id="list"></div>
-    <div class="empty" id="empty">No guests match that search.</div>
-  </main>
+/* ─── SECTION HEADER ────────────────────────────────────────────────────── */
+function SectionHeader({ text }) {
+  return (
+    <div style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 11, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.28em", color: "#8C7468", paddingBottom: 14 }}>
+      {text}
+    </div>
+  );
+}
 
-  <footer>
-    <button class="reset" id="reset">Reset all check-ins</button>
-  </footer>
+/* ─── DOMAIN SECTION ─────────────────────────────────────────────────────── */
+function DomainSection({ d, ring, accent, isLead, anchor, active }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    if (active === d.key && ref.current) {
+      ref.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [active, d.key]);
 
-<script>
-/* ============================================================
-   GUEST LIST  — edit this array to update names / times / slots
-   id    : stable unique key (check-in state is stored by id —
-           never reorder-sensitive, safe with duplicate names)
-   time  : display string, 12-hour AM/PM
-   intake: true = green check, false/omitted = red X (required for entry).
-           Sets the baseline from the spreadsheet; a host tap at the desk
-           overrides it for that guest (saved separately).
-   ============================================================ */
-const GUESTS = [
-  { id:"g01", time:"10:00 AM",  name:"Deja Riley", intake:true },
-  { id:"g02", time:"10:10 AM",  name:"Kyle Harty", intake:true },
-  { id:"g03", time:"10:20 AM",  name:"Chris Vasquez" },
-  { id:"g04", time:"10:30 AM",  name:"Derek Degrazio" },
-  { id:"g05", time:"10:40 AM",  name:"Brenda Schamy", intake:true },
-  { id:"g06", time:"10:50 AM",  name:"Julia Mirer" },
-  { id:"g07", time:"11:00 AM",  name:"Dana Winters" },
-  { id:"g08", time:"11:10 AM",  name:"Daniel Feldstein", intake:true },
-  { id:"g09", time:"11:20 AM",  name:"Angelo Sadeghpour", intake:true },
-  { id:"g10", time:"11:30 AM",  name:"Devin Bender", intake:true },
-  { id:"g11", time:"11:40 AM",  name:"Michael Raymond", intake:true },
-  { id:"g12", time:"11:50 AM",  name:"Rachel Kozy" },
-  { id:"g13", time:"12:00 PM",  name:"Emily Sowski", intake:true },
-  { id:"g14", time:"12:10 PM",  name:"Noelle Gesualdo", intake:true },
-  { id:"g15", time:"12:20 PM",  name:"Greg Horowitz", intake:true },
-  { id:"g16", time:"12:30 PM",  name:"Stefania Sorrenti" },
-  { id:"g17", time:"12:40 PM",  name:"Vishal Sapra", intake:true },
-  { id:"g18", time:"12:50 PM",  name:"Anna Sapra", intake:true },
-  { id:"g19", time:"1:00 PM",   name:"Amber Berger" },
-  { id:"g20", time:"1:10 PM",   name:"Case Kenny", intake:true },
-  { id:"g21", time:"1:20 PM",   name:"Marinda Fruge", intake:true },
-  { id:"g22", time:"1:30 PM",   name:"Madeline McMillen", intake:true },
-  { id:"g23", time:"1:40 PM",   name:"Erica Kasel", intake:true },
-  { id:"g24", time:"1:50 PM",   name:"Carrie Siu Butt", intake:true },
-  { id:"g25", time:"2:00 PM",   name:"Tiana De Carolis", intake:true },
-  { id:"g26", time:"2:10 PM",   name:"Adri Delor" },
-  { id:"g27", time:"2:20 PM",   name:"Katherine Delgado", intake:true },
-  { id:"g28", time:"2:30 PM",   name:"Haylee Harrison" },
-  { id:"g29", time:"2:40 PM",   name:"Valerie Brown" },
-  { id:"g30", time:"2:50 PM",   name:"Bari-Lynn Friedlander", intake:true },
-  { id:"g31", time:"3:00 PM",   name:"Teyma Touati", intake:true },
-  { id:"g32", time:"3:10 PM",   name:"Andrea Cassandro" },
-  { id:"g33", time:"3:20 PM",   name:"Mike Lee" },
-  { id:"g34", time:"3:30 PM",   name:"Stephanie Tisch", intake:true },
-  { id:"g35", time:"3:40 PM",   name:"Jim Phillips" },
-  { id:"g36", time:"3:50 PM",   name:"Brittany Berger", intake:true },
-  { id:"g37", time:"4:00 PM",   name:"Victor Oladipo" },
-  { id:"g38", time:"4:10 PM",   name:"Sarah Garon" },
-  { id:"g39", time:"4:20 PM",   name:"Sabina" },
-  { id:"g40", time:"4:30 PM",   name:"Brittanae Casper" },
-  { id:"g41", time:"4:40 PM",   name:"OPEN", placeholder:true },
-  { id:"g42", time:"4:50 PM",   name:"Jenna Holtzman" },
-  { id:"g43", time:"5:00 PM",   name:"Joachim Hofvenschiöld", intake:true },
-  { id:"g44", time:"5:10 PM",   name:"Nicole Ianniello" },
-  { id:"g45", time:"5:20 PM",   name:"Magda Melero" },
-  { id:"g46", time:"5:30 PM",   name:"Elena Levine", intake:true },
-  { id:"g47", time:"5:40 PM",   name:"Sacha Awwa" },
-  { id:"g48", time:"5:50 PM",   name:"Aldara Ortega" },
-  { id:"g49", time:"6:00 PM",   name:"Minh Nguyen", intake:true },
+  return (
+    <section ref={ref} id={anchor} style={{ padding: "48px 0", borderTop: "1px solid rgba(81,83,85,0.10)", scrollMarginTop: 24, transition: "background 280ms cubic-bezier(0.22,1,0.36,1)", background: active === d.key ? "rgba(180,154,141,0.04)" : "transparent" }}>
+      <div className="aq-domain-grid">
+        <div>
+          <div style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 11, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.22em", color: "#8C7468", marginBottom: 14 }}>
+            — {ring === "cog" ? "Cognitive" : "Affective"}{isLead ? " · lead domain" : ""}
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr auto", alignItems: "baseline", gap: 20, marginBottom: 18 }}>
+            <h3 style={{ fontFamily: '"Fraunces", serif', fontWeight: 300, fontSize: 48, letterSpacing: "-0.015em", color: "#1F2123", margin: 0, lineHeight: 1.05 }}>{d.name}</h3>
+            <span style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 200, fontSize: 56, lineHeight: 1, color: accent, fontFeatureSettings: '"tnum" 1, "lnum" 1', letterSpacing: "-0.02em", textAlign: "right" }}>
+              {d.score}<span style={{ fontSize: 22, color: "#8B8C8E" }}>%</span>
+            </span>
+          </div>
+          <p style={{ fontFamily: '"Fraunces", serif', fontWeight: 300, fontSize: 19, lineHeight: 1.5, color: "#36383A", margin: "0 0 20px", maxWidth: "38ch" }}>{d.blurb}</p>
+          <div style={{ display: "flex", gap: 14, fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 11, fontWeight: 400, textTransform: "uppercase", letterSpacing: "0.18em", color: "#8B8C8E" }}>
+            <span>Sources</span>
+            {d.sources.map((s, i) => <span key={i} style={{ color: "#36383A" }}>· {s}</span>)}
+          </div>
+        </div>
+        <div>
+          <div style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 11, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.22em", color: "#8C7468", marginBottom: 18 }}>— Signals</div>
+          <div className="aq-signals-grid">
+            {d.metrics.map((m, i) => (
+              <div key={i} style={{ paddingBottom: 14, borderBottom: "1px solid rgba(81,83,85,0.08)" }}>
+                <div style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 10, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.20em", color: "#8B8C8E", marginBottom: 6 }}>{m.label}</div>
+                <div style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 200, fontSize: 26, color: "#1F2123", fontFeatureSettings: '"tnum" 1, "lnum" 1', letterSpacing: "-0.01em" }}>{m.value}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── INTRO COPY ─────────────────────────────────────────────────────────── */
+/* Verbatim onboarding copy. Stage index 0..4; the finale (stage 5) has no panel. */
+const INTRO_PANELS = [
+  {
+    title: `AQ — The Adessa Quotient`,
+    body: [
+      `A real-time picture of how your mind is performing right now.`,
+    ],
+    button: `Begin`,
+  },
+  {
+    body: [
+      `Your AQ is the output of your Discovery Session translated into a single, readable signal of how your brain is functioning today.`,
+      `It's not a test you pass or fail. It's not a measure of intelligence. A high number doesn't mean a "better brain." It simply shows what you're capable of and gives us a clear place to begin.`,
+      `Your mind will read differently on different days, under different loads, in different seasons of life.`,
+    ],
+    button: `Next`,
+  },
+  {
+    eyebrow: `Outer Ring`,
+    title: `Cognitive Domains`,
+    body: [
+      `The mechanics of how your mind takes in, holds, and acts on information. Each is shown as a percentage of your own cognitive potential currently being expressed.`,
+    ],
+    button: `Next`,
+  },
+  {
+    eyebrow: `Inner Ring`,
+    title: `Affective Domains`,
+    body: [
+      `This is the physiological state underneath your thinking — your nervous system's regulation, measured relative to its optimal range.`,
+    ],
+    button: `Next`,
+  },
+  {
+    eyebrow: `Center`,
+    title: `Your AQ`,
+    body: [
+      <>The <strong>letter</strong> at the center is your leading cognitive domain — the area expressing the highest share of your potential right now. It's where your brain is strongest in this moment. The <strong>number</strong> is the overall expression of your cognitive potential — how much of what your mind is capable of is showing up today.</>,
+    ],
+    button: `See your AQ`,
+  },
 ];
 
-const STORAGE_KEY = "adessa-checkin-v2";
-const INTAKE_KEY  = "adessa-intake-v2";
+/* ─── ARTBOARD ───────────────────────────────────────────────────────────── */
+function AQArtboard() {
+  const data = AQ_DATA;
+  /* Fixed internal ring geometry — the SVG scales smoothly via CSS to whatever width
+     its column is, so resizing/centering never re-jiggers the stroke-dash math. */
+  const RING_SIZE = 640;
+  const [active, setActive] = useState(null);
+  const [stage, setStage] = useState(0);          // 0..4 = intro panels
+  const [phase, setPhase] = useState("intro");     // "intro" | "finale" | "report"
+  const [finaleStep, setFinaleStep] = useState(0); // 0 textfade · 1 wipe+center · 2 outer · 3 inner · 4 AQ · 5 key · 6 rest
+  const PLACEHOLDER_AQ = 12;                        // center reads "A.12" until the finale
+  const [displayNum, setDisplayNum] = useState(PLACEHOLDER_AQ);
+  const [reducedMotion] = useState(() =>
+    typeof window !== "undefined" && window.matchMedia
+      ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      : false);
 
-/* ---- state ---- */
-function load(key){
-  try { return JSON.parse(localStorage.getItem(key)) || {}; }
-  catch(e){ return {}; }
-}
-function save(key, obj){
-  try { localStorage.setItem(key, JSON.stringify(obj)); }
-  catch(e){ /* storage unavailable — state stays in memory for the session */ }
-}
-let state = load(STORAGE_KEY);          // check-in (host action)
-let intakeState = load(INTAKE_KEY);     // intake overrides (host flips)
+  /* Finale choreography — fires once the guest taps "See your AQ".
+     Step 0: the example text fades out (ring stays put). Step 1: the ring recenters +
+     grows while it wipes clean and "A.12" fades — all together. Then the outer ring
+     draws in (2), the inner (3), the center AQ (4), and the detail: key (5) and rest (6). */
+  useEffect(() => {
+    if (phase !== "finale") return;
+    if (reducedMotion) {
+      setFinaleStep(4);
+      const t = setTimeout(() => setPhase("report"), 500);
+      return () => clearTimeout(t);
+    }
+    const timers = [
+      setTimeout(() => setFinaleStep(1),  450),   // text faded → recenter + wipe + A.12 fade (together)
+      setTimeout(() => setFinaleStep(2), 1500),   // outer ring draws in
+      setTimeout(() => setFinaleStep(3), 2450),   // inner ring draws in
+      setTimeout(() => setFinaleStep(4), 3400),   // bring the AQ into the center
+      setTimeout(() => setFinaleStep(5), 4200),   // fade in the key
+      setTimeout(() => setFinaleStep(6), 4800),   // short beat, then the rest of the detail
+      setTimeout(() => setPhase("report"), 5500), // settle (selection becomes interactive)
+    ];
+    return () => timers.forEach(clearTimeout);
+  }, [phase, reducedMotion]);
 
-// Effective intake status: a host flip wins; otherwise fall back to the
-// spreadsheet's `intake` value for that guest.
-function intakeDone(g){
-  return (g.id in intakeState) ? intakeState[g.id] : (g.intake === true);
-}
+  /* Show the AQ number when the center is brought forward (no count-up — it fades in). */
+  useEffect(() => {
+    const centerActive = (phase === "finale" && finaleStep >= 4) || phase === "report";
+    if (centerActive) setDisplayNum(data.aq.utilization);
+  }, [phase, finaleStep, data.aq.utilization]);
 
-/* ---- sort earliest-first (robust to manual reordering of the array) ---- */
-function toMinutes(t){
-  const m = t.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-  if(!m) return 0;
-  let h = parseInt(m[1],10) % 12;
-  if(/PM/i.test(m[3])) h += 12;
-  return h*60 + parseInt(m[2],10);
-}
-const ordered = [...GUESTS].sort((a,b)=>{
-  const d = toMinutes(a.time) - toMinutes(b.time);
-  return d !== 0 ? d : a.name.localeCompare(b.name);
-});
+  const cogLeadKey = (data.cognitive.find(d => d.isLead) || data.cognitive[0]).key;
+  const ringPalette = {
+    cog: data.cognitive.map(d => d.key === cogLeadKey ? "#BFA4A4" : "#515355"),
+    aff: data.affective.map(() => "#8E9BA4"),
+  };
 
-/* ---- render ---- */
-const listEl = document.getElementById("list");
-const emptyEl = document.getElementById("empty");
+  /* Selection only becomes interactive once the report is shown. */
+  const handleSelect = (key) => { if (phase !== "report") return; setActive(active === key ? null : key); };
+  const advance = () => {
+    if (stage < 4) { setStage(stage + 1); return; }
+    setPhase("finale");   // "See your AQ" → begin the finale choreography
+  };
 
-function buildRow(g){
-  const row = document.createElement("div");
-  row.className = "row" + (state[g.id] ? " checked" : "");
-  row.dataset.id = g.id;
-  row.dataset.name = g.name.toLowerCase();
-
-  const time = document.createElement("div");
-  time.className = "time";
-  time.textContent = g.time;
-
-  const name = document.createElement("div");
-  name.className = "name" + (g.placeholder ? " placeholder" : "");
-  name.textContent = g.name;
-
-  // Intake status — host-flippable. Reflects the spreadsheet value unless a
-  // host has tapped it (actual intake happens on a separate computer).
-  const intake = document.createElement("button");
-  intake.className = "intake";
-  intake.addEventListener("click", ()=> toggleIntake(g.id, intake, g.name));
-  applyIntake(intake, intakeDone(g), g.name);
-
-  const btn = document.createElement("button");
-  btn.className = "btn";
-  btn.setAttribute("aria-pressed", state[g.id] ? "true" : "false");
-  btn.setAttribute("aria-label", "Toggle check-in for " + g.name);
-  btn.innerHTML =
-    '<svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
-    '<span class="plus" style="display:none;">＋</span>' +
-    '<span class="label-in">Check In</span>' +
-    '<span class="label-out">Checked In</span>';
-
-  btn.addEventListener("click", ()=> toggle(g.id, row, btn));
-
-  row.append(time, name, intake, btn);
-  return row;
-}
-
-function toggle(id, row, btn){
-  if(state[id]){ delete state[id]; }
-  else { state[id] = true; }
-  save(STORAGE_KEY, state);
-  row.classList.toggle("checked", !!state[id]);
-  btn.setAttribute("aria-pressed", state[id] ? "true" : "false");
-  updateCount();
-}
-
-const ICON_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
-const ICON_X     = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>';
-
-function applyIntake(el, done, name){
-  el.classList.toggle("done", done);
-  el.classList.toggle("missing", !done);
-  el.setAttribute("aria-pressed", done ? "true" : "false");
-  el.setAttribute("aria-label", (done ? "Intake completed" : "Intake not completed") + " — " + name + ". Tap to change.");
-  el.innerHTML = (done ? ICON_CHECK : ICON_X) + '<span class="ilabel">Intake</span>';
-}
-
-function toggleIntake(id, el, name){
-  const next = !el.classList.contains("done");
-  intakeState[id] = next;
-  save(INTAKE_KEY, intakeState);
-  applyIntake(el, next, name);
-}
-
-function render(){
-  const frag = document.createDocumentFragment();
-  ordered.forEach(g => frag.appendChild(buildRow(g)));
-  listEl.appendChild(frag);
-  document.getElementById("totalCount").textContent = ordered.length;
-  updateCount();
-}
-
-function updateCount(){
-  const checked = ordered.reduce((n,g)=> n + (state[g.id] ? 1 : 0), 0);
-  document.getElementById("checkedCount").textContent = checked;
-  const pct = ordered.length ? (checked/ordered.length*100) : 0;
-  document.getElementById("progressBar").style.width = pct + "%";
-}
-
-/* ---- search ---- */
-document.getElementById("search").addEventListener("input", (e)=>{
-  const q = e.target.value.trim().toLowerCase();
-  let visible = 0;
-  listEl.querySelectorAll(".row").forEach(r=>{
-    const show = !q || r.dataset.name.includes(q);
-    r.style.display = show ? "" : "none";
-    if(show) visible++;
-  });
-  emptyEl.style.display = visible ? "none" : "block";
-});
-
-/* ---- reset ---- */
-document.getElementById("reset").addEventListener("click", ()=>{
-  if(confirm("Reset all check-ins? This clears every guest back to not-checked-in.")){
-    state = {};
-    saveState(state);
-    listEl.querySelectorAll(".row").forEach(r=>{
-      r.classList.remove("checked");
-      r.querySelector(".btn").setAttribute("aria-pressed","false");
-    });
-    updateCount();
+  /* Reveal state for the chart. During the intro it's driven by the stage (stage 2
+     spotlights the outer ring, 3 the inner ring, 4 fades both back with the center
+     placeholder). During the finale/report it's driven by the choreography step. */
+  const PRESENT = 0.62, FAINT = 0.14;
+  let reveal;
+  if (phase === "intro") {
+    reveal = {
+      outerOpacity: stage === 2 ? PRESENT : FAINT,
+      innerOpacity: stage === 3 ? PRESENT : FAINT,
+      outerFill: "placeholder",
+      innerFill: "placeholder",
+      outerLabels: stage === 2 ? "names" : "hidden",
+      innerLabels: stage === 3 ? "names" : "hidden",
+      centerStage: stage >= 4 ? "placeholder" : "hidden",
+      centerNumber: displayNum,
+    };
+  } else {
+    const fs = phase === "report" ? 4 : finaleStep;   // report = fully revealed
+    /* Step 0 = still the example skeleton + "A.12" while the text fades. Step 1 wipes it
+       clean (empty) as the ring recenters and "A.12" fades. 2 outer fills · 3 inner · 4 AQ. */
+    reveal = {
+      outerOpacity: fs >= 2 ? 1 : (fs === 0 ? FAINT : 0),
+      innerOpacity: fs >= 3 ? 1 : (fs === 0 ? FAINT : 0),
+      outerFill: fs >= 2 ? "scored" : (fs === 0 ? "placeholder" : "empty"),
+      innerFill: fs >= 3 ? "scored" : (fs === 0 ? "placeholder" : "empty"),
+      outerLabels: fs >= 2 ? "full" : "hidden",
+      innerLabels: fs >= 3 ? "full" : "hidden",
+      centerStage: fs >= 4 ? "final" : (fs === 0 ? "placeholder" : "hidden"),
+      centerNumber: displayNum,
+    };
   }
-});
 
-render();
+  /* Detail panel reveal: after the rings + AQ land, the content extends down as the
+     key fades in (step 4), then it grows again for the rest a beat later (step 5). */
+  const detailMounted = phase !== "intro";                                  // box present (collapsed) during the finale
+  const keyVisible  = (phase === "finale" && finaleStep >= 5) || phase === "report";
+  const restVisible = (phase === "finale" && finaleStep >= 6) || phase === "report";
+
+  const introVisible = phase === "intro";
+  const panel = INTRO_PANELS[Math.min(stage, INTRO_PANELS.length - 1)];
+  /* Split (text left, ring right) through the whole intro, and held one beat into the
+     finale so the example text fades out before the ring recenters. */
+  const isSplit = phase === "intro" || (phase === "finale" && finaleStep === 0);
+  /* Keep the screen-5 content mounted through the finale's first step so it fades out. */
+  const showIntro = phase === "intro" || (phase === "finale" && finaleStep === 0);
+  const introNode = showIntro ? (
+    <div className={"aq-intro aq-intro--split" + (panel.title ? " aq-intro--title" : "") + (stage >= 1 ? " aq-intro--steps" : "")}
+      style={{ opacity: introVisible ? 1 : 0, pointerEvents: introVisible ? "auto" : "none" }}
+      aria-hidden={!introVisible}>
+      <div className="aq-intro-inner">
+        {(panel.eyebrow || panel.title) && (
+          <div className="aq-intro-headline">
+            {panel.eyebrow && <div className="aq-intro-eyebrow">{panel.eyebrow}</div>}
+            {panel.title && <h1 className="aq-intro-title">{panel.title}</h1>}
+          </div>
+        )}
+        <div className="aq-intro-body">
+          {panel.body.map((p, i) => <p key={i}>{p}</p>)}
+        </div>
+        <div className="aq-intro-actions">
+          <button className="aq-btn" onClick={advance}>{panel.button}</button>
+        </div>
+      </div>
+    </div>
+  ) : null;
+
+  return (
+    <div className={"aq-card" + (isSplit ? " is-wide" : "")}>
+      {/* Header */}
+      <header className="aq-header">
+        <AdessaLogo height={22} />
+        <div className="aq-meta">
+          <span style={{ color: "#1F2123" }}>{data.guest.name}</span>
+          {"  ·  "}{data.guest.session}
+        </div>
+        <h2 style={{ fontFamily: '"Fraunces", serif', fontWeight: 300, fontSize: 26, letterSpacing: "-0.01em", color: "#1F2123", margin: 0, lineHeight: 1, flexShrink: 0 }}>
+          AQ
+        </h2>
+      </header>
+
+      {/* Stage: the ring with a side text column. During the intro it splits — text on
+          the left, ring on the right; for the finale/report it centers. */}
+      <div className={"aq-stage" + (isSplit ? " is-split" : "")}>
+        <div className="aq-stage-text">
+          {introNode}
+        </div>
+        <div className="aq-stage-ring">
+          <div className="aq-ring-sizer">
+            <AQRing onSelect={handleSelect} active={active} data={data} size={RING_SIZE} reveal={reveal} reducedMotion={reducedMotion} />
+          </div>
+        </div>
+      </div>
+
+      {/* Detail — a light box that extends down as its content arrives: the key fades in
+         first (box grows to fit it), then the rest of the detail a beat later */}
+      {detailMounted && (
+        <div className={"aq-detail" + (keyVisible ? " is-open" : "")}>
+          <div className="aq-detail-clip">
+            <div className="aq-detail-inner">
+              {/* Reading guide */}
+              {keyVisible && (
+              <div className="aq-key aq-fade">
+                <div className="aq-key-row">
+                  <KeyItem
+                    dotColor="#BFA4A4"
+                    eyebrow={<><span>Outer ring</span>{"  ·  "}<span style={{ color: "#1F2123" }}>Cognitive domains</span></>}
+                    sub="% of cognitive potential expressed"
+                  />
+                  <KeyItem
+                    dotColor="#8E9BA4"
+                    eyebrow={<><span>Inner ring</span>{"  ·  "}<span style={{ color: "#1F2123" }}>Affective domains</span></>}
+                    sub="% relative to optimal state"
+                  />
+                </div>
+                <KeyItem
+                  dotColor="#515355"
+                  eyebrow={<><span>Center</span>{"  ·  "}<span style={{ color: "#1F2123" }}>AQ</span></>}
+                  sub="Leading Cognitive Domain · Overall Expression of Cognitive Potential"
+                  centered
+                />
+              </div>
+              )}
+
+              {/* The rest of the detail content, revealed together a beat after the key */}
+              {restVisible && (
+              <div className="aq-fade">
+                {/* Domains in detail */}
+                <div style={{ marginTop: 56 }}>
+                  <SectionHeader text="Domains in Detail" />
+                  {data.cognitive.map((d, i) => (
+                    <DomainSection key={d.key} d={d} ring="cog" accent={ringPalette.cog[i]} isLead={d.isLead} anchor={`d-${d.key}`} active={active} />
+                  ))}
+                  <div style={{ height: 32 }} />
+                  {data.affective.map((d, i) => (
+                    <DomainSection key={d.key} d={d} ring="aff" accent={ringPalette.aff[i]} anchor={`d-${d.key}`} active={active} />
+                  ))}
+                </div>
+
+                {/* Footer */}
+                <footer style={{ marginTop: 64, paddingTop: 32, borderTop: "1px solid rgba(81,83,85,0.10)", display: "flex", justifyContent: "space-between", alignItems: "baseline", fontSize: 11, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.22em", color: "#8B8C8E" }}>
+                  <span>— Adessa · {data.guest.session.split(" · ")[0]}</span>
+                </footer>
+              </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── APP ────────────────────────────────────────────────────────────────── */
+ReactDOM.createRoot(document.getElementById("root")).render(<AQArtboard />);
 </script>
 </body>
 </html>
